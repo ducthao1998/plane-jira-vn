@@ -77,6 +77,7 @@ from plane.bgtasks.storage_metadata_task import get_asset_object_metadata
 from .base import BaseAPIView
 from plane.utils.host import base_host
 from plane.bgtasks.webhook_task import model_activity
+from plane.bgtasks.dapd_sync_task import dapd_sync_issue
 from plane.app.permissions import ROLE
 from plane.utils.openapi import (
     work_item_docs,
@@ -481,6 +482,14 @@ class IssueListCreateAPIEndpoint(BaseAPIView):
                 slug=slug,
                 origin=base_host(request=request, is_app=True),
             )
+
+            # DAPD: Đồng bộ issue mới sang DAPD Engine
+            dapd_sync_issue.delay(
+                issue_id=str(serializer.data["id"]),
+                verb="created",
+                slug=slug,
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -629,6 +638,14 @@ class IssueDetailAPIEndpoint(BaseAPIView):
                         current_instance=current_instance,
                         epoch=int(timezone.now().timestamp()),
                     )
+
+                    # DAPD: Đồng bộ cập nhật issue sang DAPD Engine
+                    dapd_sync_issue.delay(
+                        issue_id=str(issue.id),
+                        verb="updated",
+                        slug=slug,
+                    )
+
                     return Response(serializer.data, status=status.HTTP_200_OK)
                 return Response(
                     # If the serializer is not valid, respond with 400 bad
@@ -677,6 +694,14 @@ class IssueDetailAPIEndpoint(BaseAPIView):
                         current_instance=None,
                         epoch=int(timezone.now().timestamp()),
                     )
+
+                    # DAPD: Đồng bộ issue mới sang DAPD Engine
+                    dapd_sync_issue.delay(
+                        issue_id=str(serializer.data["id"]),
+                        verb="created",
+                        slug=slug,
+                    )
+
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -752,6 +777,14 @@ class IssueDetailAPIEndpoint(BaseAPIView):
                 current_instance=current_instance,
                 epoch=int(timezone.now().timestamp()),
             )
+
+            # DAPD: Đồng bộ cập nhật issue sang DAPD Engine
+            dapd_sync_issue.delay(
+                issue_id=str(pk),
+                verb="updated",
+                slug=slug,
+            )
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -789,6 +822,14 @@ class IssueDetailAPIEndpoint(BaseAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
         current_instance = json.dumps(IssueSerializer(issue).data, cls=DjangoJSONEncoder)
+
+        # DAPD: Thông báo xóa issue sang DAPD Engine (gọi trước khi xóa)
+        dapd_sync_issue.delay(
+            issue_id=str(pk),
+            verb="deleted",
+            slug=slug,
+        )
+
         issue.delete()
         issue_activity.delay(
             type="issue.activity.deleted",
