@@ -48,6 +48,8 @@ def api_get(path: str):
 def api_post(path: str, data: dict):
     url = f"{BASE}/{path}"
     resp = requests.post(url, headers=HEADERS, json=data)
+    if resp.status_code >= 400:
+        print(f"  [DEBUG] POST {path} -> {resp.status_code}: {resp.text[:300]}")
     resp.raise_for_status()
     return resp.json()
 
@@ -55,6 +57,8 @@ def api_post(path: str, data: dict):
 def api_patch(path: str, data: dict):
     url = f"{BASE}/{path}"
     resp = requests.patch(url, headers=HEADERS, json=data)
+    if resp.status_code >= 400:
+        print(f"  [DEBUG] PATCH {path} -> {resp.status_code}: {resp.text[:300]}")
     resp.raise_for_status()
     return resp.json()
 
