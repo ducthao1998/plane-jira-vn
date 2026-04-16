@@ -201,14 +201,14 @@ def get_or_create_modules(pid: str) -> dict:
 CYCLES_DATA = [
     {
         "name": "SPRINT-05",
-        "start_date": "2025-02-10",
-        "end_date": "2025-02-28",
+        "start_date": "2026-04-01",
+        "end_date": "2026-04-30",
         "description": "Sprint 05: Chuyen diem quoc te + Fix bug giao dich (S1-S5)",
     },
     {
         "name": "SPRINT-06",
-        "start_date": "2025-03-01",
-        "end_date": "2025-03-15",
+        "start_date": "2026-05-01",
+        "end_date": "2026-05-15",
         "description": "Sprint 06: Tinh nang QR Code (S6)",
     },
 ]
@@ -425,7 +425,7 @@ def get_or_create_issues(pid, state_id, module_map, cycle_map, label_map):
         if mod_name in module_map:
             mid = module_map[mod_name]
             try:
-                api_post(f"projects/{pid}/modules/{mid}/module-issues/", {"issue": iid})
+                api_post(f"projects/{pid}/modules/{mid}/module-issues/", {"issues": [iid]})
                 print(f"     -> Gan vao module '{mod_name}'")
             except requests.exceptions.HTTPError as e:
                 if e.response is not None and e.response.status_code == 409:
