@@ -226,7 +226,8 @@ def get_or_create_cycles(pid: str) -> dict:
             print(f"  -> Cycle '{cyc['name']}' da ton tai (id={found['id']})")
         else:
             try:
-                result = api_post(f"projects/{pid}/cycles/", cyc)
+                payload = {**cyc, "project_id": pid}
+                result = api_post(f"projects/{pid}/cycles/", payload)
                 cycle_map[cyc["name"]] = result["id"]
                 print(f"  -> Da tao cycle '{cyc['name']}' (id={result['id']})")
             except Exception as e:
@@ -397,7 +398,6 @@ def get_or_create_issues(pid, state_id, module_map, cycle_map, label_map):
                 "name": issue["name"],
                 "description_html": f"<p>{issue['description'].replace(chr(10), '<br/>')}</p>",
                 "priority": issue["priority"],
-                "estimate_point": issue["estimate_point"],
             }
             if state_id:
                 payload["state"] = state_id
