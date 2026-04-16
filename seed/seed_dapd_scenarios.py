@@ -77,8 +77,8 @@ def find_by_name(items, name: str):
 # ---------------------------------------------------------------------------
 
 PROJECT_DATA = {
-    "name": "E-Wallet Platform",
-    "description": "He thong vi dien tu (e-wallet) — kien truc microservices, 7 services, Spring Boot + React",
+    "name": "EWallet Platform",
+    "description": "He thong vi dien tu eWallet kien truc microservices 7 services Spring Boot va React",
     "network": 2,
     "identifier": "EWLT",
 }
