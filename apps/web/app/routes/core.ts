@@ -67,6 +67,11 @@ export const coreRoutes: RouteConfigEntry[] = [
           route(":workspaceSlug/active-cycles", "./(all)/[workspaceSlug]/(projects)/active-cycles/page.tsx"),
         ]),
 
+        // DAPD Dashboard - Phan tich tac dong AI
+        layout("./(all)/[workspaceSlug]/(projects)/dapd-dashboard/layout.tsx", [
+          route(":workspaceSlug/dapd-dashboard", "./(all)/[workspaceSlug]/(projects)/dapd-dashboard/page.tsx"),
+        ]),
+
         // Analytics
         layout("./(all)/[workspaceSlug]/(projects)/analytics/[tabId]/layout.tsx", [
           route(":workspaceSlug/analytics/:tabId", "./(all)/[workspaceSlug]/(projects)/analytics/[tabId]/page.tsx"),

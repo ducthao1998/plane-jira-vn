@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DAPD Dashboard - Phan tich tac dong theo Task</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .gradient-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .gradient-card-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .gradient-card-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .gradient-card-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .pulse-ring { animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+    @keyframes pulse-ring { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99,102,241,0.5); }
+      70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(99,102,241,0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99,102,241,0); } }
+    .fade-in { animation: fadeIn 0.5s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .impact-direct { background: linear-gradient(90deg, #ef4444 0%, #f97316 100%); }
+    .impact-indirect { background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen" x-data="dashboard()" x-init="init()">
+
+  <!-- Header -->
+  <div class="gradient-bg shadow-xl">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+      <div class="flex items-center justify-between">
+        <div class="text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold">DAPD Dashboard</h1>
+              <p class="text-sm text-white text-opacity-80">Phan tich tac dong xuyen layer cho ke hoach Agile</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="px-4 py-2 bg-white bg-opacity-20 rounded-lg backdrop-blur-sm">
+            <span class="text-white text-sm font-medium" x-text="apiStatus"></span>
+          </div>
+          <button @click="checkApiHealth()" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg backdrop-blur-sm transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Config Panel -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <span class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </span>
+          Cau hinh API
+        </h2>
+        <button @click="useDemo = !useDemo" :class="useDemo ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'" class="px-3 py-1 rounded-lg text-sm font-medium transition">
+          <span x-text="useDemo ? 'Demo Mode' : 'Live API'"></span>
+        </button>
+      </div>
+      <div class="flex gap-3">
+        <input x-model="apiUrl" type="text" class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm" placeholder="http://localhost:8090">
+      </div>
+      <p class="text-xs text-gray-500 mt-2">URL cua DAPD Engine. Bat <strong>Demo Mode</strong> de xem du lieu mau (khong can API thuc te).</p>
+    </div>
+
+    <!-- Task Selector -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </span>
+        Chon Task de phan tich
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+        <template x-for="task in tasks" :key="task.id">
+          <button @click="selectTask(task.id)"
+            :class="selectedTaskId === task.id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-indigo-300 bg-white'"
+            class="text-left p-4 rounded-xl border-2 transition relative">
+            <div class="flex items-start justify-between mb-1">
+              <span class="text-xs font-bold px-2 py-0.5 rounded-md"
+                :class="task.type === 'FEATURE' ? 'bg-green-100 text-green-700'
+                      : task.type === 'BUG_FIX' ? 'bg-red-100 text-red-700'
+                      : 'bg-orange-100 text-orange-700'"
+                x-text="task.type"></span>
+              <span class="text-xs text-gray-400" x-text="'#' + task.id"></span>
+            </div>
+            <p class="text-sm font-semibold text-gray-800" x-text="task.name"></p>
+            <p class="text-xs text-gray-500 mt-1" x-text="task.sprint"></p>
+          </button>
+        </template>
+      </div>
+      <button @click="analyze()" :disabled="!selectedTaskId || loading"
+        class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold text-base shadow-lg transition flex items-center justify-center gap-2">
+        <template x-if="!loading">
+          <span class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Phan tich tac dong (h: A &rarr; O)
+          </span>
+        </template>
+        <template x-if="loading">
+          <span class="flex items-center gap-2">
+            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+            Dang phan tich...
+          </span>
+        </template>
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div x-show="error" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6 fade-in">
+      <div class="flex items-start gap-3">
+        <svg class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+          <p class="font-semibold text-red-800">Loi khi goi API</p>
+          <p class="text-sm text-red-600 mt-1" x-text="error"></p>
+          <p class="text-xs text-gray-500 mt-2">Goi y: bat <strong>Demo Mode</strong> o tren neu API chua chay.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div x-show="result" class="space-y-6 fade-in">
+
+      <!-- Top summary -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="gradient-card rounded-2xl p-5 text-white shadow-lg">
+          <p class="text-xs font-medium opacity-80 mb-2">RUI RO TONG THE</p>
+          <p class="text-3xl font-bold" x-text="result?.riskAssessment || '-'"></p>
+          <p class="text-xs opacity-80 mt-2" x-text="result?.requiresApproval ? 'Can PM approve' : 'Khong can approve'"></p>
+        </div>
+        <div class="gradient-card-2 rounded-2xl p-5 text-white shadow-lg">
+          <p class="text-xs font-medium opacity-80 mb-2">TONG IMPACTS</p>
+          <p class="text-3xl font-bold" x-text="result?.suggestedImpacts?.length || 0"></p>
+          <p class="text-xs opacity-80 mt-2">Thanh phan bi anh huong</p>
+        </div>
+        <div class="gradient-card-3 rounded-2xl p-5 text-white shadow-lg">
+          <p class="text-xs font-medium opacity-80 mb-2">SERVICES ANH HUONG</p>
+          <p class="text-3xl font-bold" x-text="countByType('MICROSERVICE')"></p>
+          <p class="text-xs opacity-80 mt-2">Microservices</p>
+        </div>
+        <div class="gradient-card-4 rounded-2xl p-5 text-white shadow-lg">
+          <p class="text-xs font-medium opacity-80 mb-2">PIPELINES DE XUAT</p>
+          <p class="text-3xl font-bold" x-text="result?.suggestedPipelines?.length || 0"></p>
+          <p class="text-xs opacity-80 mt-2">Pipeline can chay</p>
+        </div>
+      </div>
+
+      <!-- Task Description Card -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-1">MO TA TASK</p>
+            <p class="text-base font-semibold text-gray-800" x-text="result?.taskDescription"></p>
+          </div>
+          <span class="px-3 py-1 rounded-lg text-xs font-bold"
+            :class="result?.analysisMethod?.includes('Bedrock') ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'">
+            <span x-text="result?.analysisMethod?.includes('Bedrock') ? 'AI BEDROCK' : 'RULE-BASED'"></span>
+          </span>
+        </div>
+        <p class="text-xs text-gray-500" x-text="result?.analysisMethod"></p>
+      </div>
+
+      <!-- Impacts by type -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <template x-for="entityType in ['MICROSERVICE', 'SOURCE_FILE', 'FUNCTION']" :key="entityType">
+          <div class="bg-white rounded-2xl shadow-lg p-5 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  :class="entityType === 'MICROSERVICE' ? 'bg-blue-100 text-blue-600'
+                        : entityType === 'SOURCE_FILE' ? 'bg-purple-100 text-purple-600'
+                        : 'bg-pink-100 text-pink-600'">
+                  <svg x-show="entityType === 'MICROSERVICE'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+                  <svg x-show="entityType === 'SOURCE_FILE'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <svg x-show="entityType === 'FUNCTION'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                </span>
+                <span x-text="entityType"></span>
+              </h3>
+              <span class="text-xs font-bold text-gray-400" x-text="filterByType(entityType).length"></span>
+            </div>
+            <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
+              <template x-for="item in filterByType(entityType)" :key="item.entityId">
+                <div class="p-3 rounded-lg border border-gray-100 hover:border-gray-300 transition">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="font-semibold text-sm text-gray-800" x-text="item.entityName"></span>
+                  </div>
+                  <div class="flex items-center gap-1.5 mb-2">
+                    <span :class="item.impactLevel === 'DIRECT' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'"
+                      class="text-xs font-bold px-2 py-0.5 rounded-md" x-text="item.impactLevel"></span>
+                    <span :class="item.confidence === 'HIGH' ? 'bg-green-100 text-green-700'
+                                : item.confidence === 'MEDIUM' ? 'bg-blue-100 text-blue-700'
+                                : 'bg-gray-100 text-gray-700'"
+                      class="text-xs font-bold px-2 py-0.5 rounded-md" x-text="item.confidence"></span>
+                  </div>
+                  <p class="text-xs text-gray-600 leading-relaxed" x-text="item.reason"></p>
+                </div>
+              </template>
+              <p x-show="filterByType(entityType).length === 0" class="text-xs text-gray-400 text-center py-6">Khong co</p>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Pipelines -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <span class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </span>
+          Pipelines de xuat (g: S &rarr; P)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <template x-for="pipeline in result?.suggestedPipelines || []" :key="pipeline.microserviceId">
+            <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-gray-800" x-text="pipeline.microserviceName"></span>
+                <span :class="pipeline.suggestedTrigger === 'AUTO' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'"
+                  class="text-xs font-bold px-2 py-1 rounded-md" x-text="pipeline.suggestedTrigger"></span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <span>Env:</span>
+                <span class="px-2 py-0.5 bg-gray-100 rounded font-medium" x-text="pipeline.environment"></span>
+                <span class="ml-auto text-gray-400">ID: <span x-text="pipeline.microserviceId"></span></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Visualization: Impact Flow -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <span class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+          </span>
+          Bieu do tac dong (DIRECT vs INDIRECT)
+        </h3>
+        <div class="space-y-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-gray-700">DIRECT (anh huong truc tiep)</span>
+              <span class="text-sm font-bold text-red-600" x-text="filterByLevel('DIRECT').length"></span>
+            </div>
+            <div class="bg-gray-100 rounded-full h-3 overflow-hidden">
+              <div class="impact-direct h-full transition-all duration-500" :style="`width: ${(filterByLevel('DIRECT').length / Math.max(result?.suggestedImpacts?.length || 1, 1)) * 100}%`"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-gray-700">INDIRECT (anh huong gian tiep)</span>
+              <span class="text-sm font-bold text-yellow-600" x-text="filterByLevel('INDIRECT').length"></span>
+            </div>
+            <div class="bg-gray-100 rounded-full h-3 overflow-hidden">
+              <div class="impact-indirect h-full transition-all duration-500" :style="`width: ${(filterByLevel('INDIRECT').length / Math.max(result?.suggestedImpacts?.length || 1, 1)) * 100}%`"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-3 gap-3">
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <p class="text-xs text-green-700 font-medium mb-1">HIGH confidence</p>
+            <p class="text-2xl font-bold text-green-800" x-text="filterByConfidence('HIGH').length"></p>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+            <p class="text-xs text-blue-700 font-medium mb-1">MEDIUM confidence</p>
+            <p class="text-2xl font-bold text-blue-800" x-text="filterByConfidence('MEDIUM').length"></p>
+          </div>
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+            <p class="text-xs text-gray-700 font-medium mb-1">LOW confidence</p>
+            <p class="text-2xl font-bold text-gray-800" x-text="filterByConfidence('LOW').length"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw JSON -->
+      <details class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <summary class="cursor-pointer font-bold text-gray-800 hover:text-indigo-600">Xem JSON raw</summary>
+        <pre class="mt-4 p-4 bg-gray-900 text-green-400 rounded-lg text-xs overflow-x-auto" x-text="JSON.stringify(result, null, 2)"></pre>
+      </details>
+    </div>
+
+    <!-- Empty state -->
+    <div x-show="!result && !error && !loading" class="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
+      <div class="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center mb-4 pulse-ring">
+        <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </div>
+      <p class="text-lg font-bold text-gray-800 mb-1">San sang phan tich</p>
+      <p class="text-sm text-gray-500">Chon mot Task o tren va bam <strong>Phan tich tac dong</strong></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-12 text-center text-xs text-gray-400">
+      <p>DAPD Framework Dashboard &middot; Data-driven Agile Project Development</p>
+      <p class="mt-1">Plane Integration &times; AWS Bedrock Claude</p>
+    </div>
+  </div>
+
+  <script>
+    function dashboard() {
+      return {
+        apiUrl: 'http://localhost:8090',
+        apiStatus: 'Chua kiem tra',
+        useDemo: false,
+        selectedTaskId: null,
+        loading: false,
+        error: null,
+        result: null,
+        tasks: [
+          { id: 1, name: 'Implement transferInternational API', type: 'FEATURE', sprint: 'SPRINT-05' },
+          { id: 2, name: 'Validate IBAN quoc te', type: 'FEATURE', sprint: 'SPRINT-05' },
+          { id: 3, name: 'Frontend trang chuyen diem quoc te', type: 'FEATURE', sprint: 'SPRINT-05' },
+          { id: 4, name: 'Fix TransactionResponse mapping', type: 'BUG_FIX', sprint: 'SPRINT-05' },
+          { id: 5, name: 'Fix frontend Transaction page', type: 'BUG_FIX', sprint: 'SPRINT-05' },
+          { id: 8, name: 'Fix high vulnerability WalletClient', type: 'SECURITY', sprint: 'SPRINT-05' },
+          { id: 9, name: 'Fix backward compatibility IbanValidator', type: 'BUG_FIX', sprint: 'SPRINT-05' },
+          { id: 10, name: 'Fix SQL injection TransactionService', type: 'SECURITY', sprint: 'SPRINT-05' },
+          { id: 11, name: 'Fix XSS vulnerability CreateQRCode.js', type: 'SECURITY', sprint: 'SPRINT-06' },
+        ],
+
+        init() {
+          this.checkApiHealth();
+        },
+
+        async checkApiHealth() {
+          this.apiStatus = 'Dang kiem tra...';
+          try {
+            const resp = await fetch(this.apiUrl + '/api/layer-p/projects', { method: 'GET', signal: AbortSignal.timeout(3000) });
+            this.apiStatus = resp.ok ? 'API Online' : 'API Loi ' + resp.status;
+          } catch (e) {
+            this.apiStatus = 'API Offline';
+          }
+        },
+
+        selectTask(id) {
+          this.selectedTaskId = id;
+          this.error = null;
+          this.result = null;
+        },
+
+        async analyze() {
+          if (!this.selectedTaskId) return;
+          this.loading = true;
+          this.error = null;
+          this.result = null;
+
+          if (this.useDemo) {
+            await new Promise(r => setTimeout(r, 800));
+            this.result = this.getDemoData(this.selectedTaskId);
+            this.loading = false;
+            return;
+          }
+
+          try {
+            const url = `${this.apiUrl}/api/dapd/ai/suggest-impact-by-task?taskId=${this.selectedTaskId}`;
+            const resp = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            if (!resp.ok) {
+              const txt = await resp.text();
+              throw new Error(`HTTP ${resp.status}: ${txt.substring(0,200)}`);
+            }
+            this.result = await resp.json();
+          } catch (e) {
+            this.error = e.message || String(e);
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        countByType(type) {
+          return (this.result?.suggestedImpacts || []).filter(i => i.entityType === type).length;
+        },
+        filterByType(type) {
+          return (this.result?.suggestedImpacts || []).filter(i => i.entityType === type);
+        },
+        filterByLevel(level) {
+          return (this.result?.suggestedImpacts || []).filter(i => i.impactLevel === level);
+        },
+        filterByConfidence(c) {
+          return (this.result?.suggestedImpacts || []).filter(i => i.confidence === c);
+        },
+
+        getDemoData(taskId) {
+          // Du lieu mau theo file API_SUGGEST_IMPACT_BY_TASK.md
+          const samples = {
+            1: {
+              taskDescription: "Them API POST /api/v1/payments/transfer-international trong PaymentController va PaymentService",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 4, entityName: "payment-management-service", impactLevel: "DIRECT", confidence: "HIGH", reason: "Can them API va logic xu ly chuyen diem quoc te" },
+                { entityType: "SOURCE_FILE", entityId: 21, entityName: "PaymentController", impactLevel: "DIRECT", confidence: "HIGH", reason: "Can them API endpoint moi" },
+                { entityType: "SOURCE_FILE", entityId: 23, entityName: "PaymentService", impactLevel: "DIRECT", confidence: "HIGH", reason: "Can them logic xu ly chuyen diem quoc te" },
+                { entityType: "SOURCE_FILE", entityId: 27, entityName: "ValidIban", impactLevel: "DIRECT", confidence: "HIGH", reason: "Can annotation moi de validate IBAN" },
+                { entityType: "SOURCE_FILE", entityId: 28, entityName: "IbanValidator", impactLevel: "DIRECT", confidence: "HIGH", reason: "Can logic validate IBAN" },
+                { entityType: "FUNCTION", entityId: 21, entityName: "PaymentService.transferFunds", impactLevel: "DIRECT", confidence: "HIGH", reason: "Can them xu ly chuyen diem quoc te" },
+                { entityType: "MICROSERVICE", entityId: 6, entityName: "common-service", impactLevel: "INDIRECT", confidence: "HIGH", reason: "Can them validator IBAN vao thu vien chung" },
+                { entityType: "MICROSERVICE", entityId: 2, entityName: "wallet-management-service", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Co the can cap nhat so du vi khi chuyen diem" },
+                { entityType: "MICROSERVICE", entityId: 3, entityName: "transaction-management-service", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Can luu giao dich chuyen diem quoc te" },
+                { entityType: "SOURCE_FILE", entityId: 24, entityName: "WalletClient", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Co the can goi wallet-service de cap nhat so du" },
+                { entityType: "SOURCE_FILE", entityId: 25, entityName: "TransactionClient", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Can goi transaction-service de luu giao dich" },
+                { entityType: "FUNCTION", entityId: 13, entityName: "WalletController.updateBalance", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Co the can goi cap nhat so du vi" },
+                { entityType: "FUNCTION", entityId: 16, entityName: "TransactionController.create", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Co the can goi luu giao dich moi" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 4, microserviceName: "payment-management-service", suggestedTrigger: "AUTO", environment: "DEV" },
+                { microserviceId: 6, microserviceName: "common-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+                { microserviceId: 2, microserviceName: "wallet-management-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+                { microserviceId: 3, microserviceName: "transaction-management-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+              ],
+              riskAssessment: "HIGH",
+              requiresApproval: true,
+            },
+            2: {
+              taskDescription: "Mo rong ValidIban annotation ho tro SWIFT/BIC code",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 6, entityName: "common-service", impactLevel: "DIRECT", confidence: "HIGH", reason: "Sua annotation trong thu vien dung chung" },
+                { entityType: "SOURCE_FILE", entityId: 27, entityName: "ValidIban", impactLevel: "DIRECT", confidence: "HIGH", reason: "Mo rong de support SWIFT/BIC" },
+                { entityType: "SOURCE_FILE", entityId: 28, entityName: "IbanValidator", impactLevel: "DIRECT", confidence: "HIGH", reason: "Them logic validate SWIFT" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 6, microserviceName: "common-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+              ],
+              riskAssessment: "MEDIUM",
+              requiresApproval: false,
+            },
+            3: {
+              taskDescription: "Them tab International Transfer trong WalletToWallet.js",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 7, entityName: "frontend", impactLevel: "DIRECT", confidence: "HIGH", reason: "Them tab moi vao trang chuyen diem" },
+                { entityType: "SOURCE_FILE", entityId: 29, entityName: "WalletToWallet.js", impactLevel: "DIRECT", confidence: "HIGH", reason: "Them UI tab International Transfer" },
+                { entityType: "SOURCE_FILE", entityId: 38, entityName: "HttpService.js", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Can them API call moi cho transfer-international" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 7, microserviceName: "frontend", suggestedTrigger: "AUTO", environment: "DEV" },
+              ],
+              riskAssessment: "LOW",
+              requiresApproval: false,
+            },
+            4: {
+              taskDescription: "Fix TransactionResponse tra ve fromWallet.user.firstName null",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 3, entityName: "transaction-management-service", impactLevel: "DIRECT", confidence: "HIGH", reason: "Fix join query trong service layer" },
+                { entityType: "SOURCE_FILE", entityId: 18, entityName: "TransactionService", impactLevel: "DIRECT", confidence: "HIGH", reason: "Sua join query de tra ve day du wallet+user" },
+                { entityType: "SOURCE_FILE", entityId: 17, entityName: "Transaction", impactLevel: "INDIRECT", confidence: "MEDIUM", reason: "Kiem tra mapping entity" },
+                { entityType: "FUNCTION", entityId: 14, entityName: "TransactionService.findById", impactLevel: "DIRECT", confidence: "HIGH", reason: "Tra ve TransactionResponse da fix" },
+                { entityType: "FUNCTION", entityId: 15, entityName: "TransactionService.findAll", impactLevel: "DIRECT", confidence: "HIGH", reason: "Tra ve TransactionResponse da fix" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 3, microserviceName: "transaction-management-service", suggestedTrigger: "AUTO", environment: "DEV" },
+              ],
+              riskAssessment: "MEDIUM",
+              requiresApproval: false,
+            },
+            5: {
+              taskDescription: "Fix Transaction.js khong hien thi ten vi do doc sai field",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 7, entityName: "frontend", impactLevel: "DIRECT", confidence: "HIGH", reason: "Fix field mapping trong trang transaction" },
+                { entityType: "SOURCE_FILE", entityId: 30, entityName: "Transaction.js", impactLevel: "DIRECT", confidence: "HIGH", reason: "Sua doc field tu response" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 7, microserviceName: "frontend", suggestedTrigger: "AUTO", environment: "DEV" },
+              ],
+              riskAssessment: "LOW",
+              requiresApproval: false,
+            },
+            8: {
+              taskDescription: "Fix high vulnerability trong WalletClient dependency",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 4, entityName: "payment-management-service", impactLevel: "DIRECT", confidence: "HIGH", reason: "Update dependency co lo hong" },
+                { entityType: "MICROSERVICE", entityId: 2, entityName: "wallet-management-service", impactLevel: "INDIRECT", confidence: "HIGH", reason: "Bi anh huong qua dependency chain" },
+                { entityType: "SOURCE_FILE", entityId: 24, entityName: "WalletClient", impactLevel: "DIRECT", confidence: "HIGH", reason: "Library bi vulnerability" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 4, microserviceName: "payment-management-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+                { microserviceId: 2, microserviceName: "wallet-management-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+              ],
+              riskAssessment: "HIGH",
+              requiresApproval: true,
+            },
+            9: {
+              taskDescription: "Fix backward compatibility cua IbanValidator",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 6, entityName: "common-service", impactLevel: "DIRECT", confidence: "HIGH", reason: "Fix logic IbanValidator de tuong thich nguoc" },
+                { entityType: "SOURCE_FILE", entityId: 28, entityName: "IbanValidator", impactLevel: "DIRECT", confidence: "HIGH", reason: "Sua logic validate" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 6, microserviceName: "common-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+              ],
+              riskAssessment: "MEDIUM",
+              requiresApproval: false,
+            },
+            10: {
+              taskDescription: "Fix SQL injection risk trong TransactionService",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 3, entityName: "transaction-management-service", impactLevel: "DIRECT", confidence: "HIGH", reason: "Fix SQL injection trong query" },
+                { entityType: "SOURCE_FILE", entityId: 18, entityName: "TransactionService", impactLevel: "DIRECT", confidence: "HIGH", reason: "Su dung prepared statement" },
+                { entityType: "FUNCTION", entityId: 15, entityName: "TransactionService.findAll", impactLevel: "DIRECT", confidence: "HIGH", reason: "Sua query co SQL injection" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 3, microserviceName: "transaction-management-service", suggestedTrigger: "MANUAL", environment: "DEV" },
+              ],
+              riskAssessment: "HIGH",
+              requiresApproval: true,
+            },
+            11: {
+              taskDescription: "Fix XSS vulnerability trong CreateQRCode.js",
+              analysisMethod: "AWS Bedrock AI (Claude) + Layer S architecture context",
+              suggestedImpacts: [
+                { entityType: "MICROSERVICE", entityId: 7, entityName: "frontend", impactLevel: "DIRECT", confidence: "HIGH", reason: "Sanitize input de tranh XSS" },
+                { entityType: "SOURCE_FILE", entityId: 35, entityName: "CreateQRCode.js", impactLevel: "DIRECT", confidence: "HIGH", reason: "Escape user input truoc khi render QR" },
+              ],
+              suggestedPipelines: [
+                { microserviceId: 7, microserviceName: "frontend", suggestedTrigger: "MANUAL", environment: "DEV" },
+              ],
+              riskAssessment: "HIGH",
+              requiresApproval: true,
+            },
+          };
+          return samples[taskId] || samples[1];
+        },
+      };
+    }
+  </script>
+</body>
+</html>
