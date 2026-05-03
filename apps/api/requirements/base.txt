@@ -23,7 +23,7 @@ django-celery-results==2.5.1
 # file serve
 whitenoise==6.11.0
 # fake data
-faker==25.0.0
+faker==40.11.1
 # filters
 django-filter==24.2
 # json model
